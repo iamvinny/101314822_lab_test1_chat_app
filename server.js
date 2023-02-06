@@ -26,6 +26,11 @@ io.on('connection', socket => {
         socket.emit('message', formatMessage(botName, 'Welcome to the Live Chat!'));
         // Broadcast to all other users (connected to that room) except the client connecting when a user connects
         socket.broadcast.to(user.room).emit('message', formatMessage(botName, `➕ ${user.username} has joined the chat!`));
+        // Send users and room info
+        io.to(user.room).emit('roomUsers', {
+            room: user.room,
+            users: getRoomUsers(user.room)
+        });
     });
 
     // Listen for chatMessage
@@ -42,6 +47,11 @@ io.on('connection', socket => {
         if (user) {
             // Broadcast to all other users (connected to that room) except the user itself when a user disconnects
             io.to(user.room).emit('message', formatMessage(botName, `❌ ${user.username} has left the chat!`));
+            // Send users and room info
+            io.to(user.room).emit('roomUsers', {
+                room: user.room,
+                users: getRoomUsers(user.room)
+            });
         } 
     });
 });
