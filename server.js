@@ -30,8 +30,10 @@ io.on('connection', socket => {
 
     // Listen for chatMessage
     socket.on('chatMessage', (msg) => {
+        // Get current user
+        const user = getCurrentUser(socket.id);
         // Get `usernane` from query string using qs
-        io.emit('message', formatMessage('USER', msg)); // Emit message to all clients
+        io.to(user.room).emit('message', formatMessage(user.username, msg)); // Emit message to all clients
     });
 
     // Runs when client disconnects
