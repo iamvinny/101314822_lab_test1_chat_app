@@ -3,6 +3,7 @@ const http = require('http'); // Import http
 const express = require('express'); // Import express
 const socketio = require('socket.io'); // Import socket.io
 const formatMessage = require('./utils/messages.js'); // Import formatMessage function
+const {userJoin, getCurrentUser} = require('./utils/users.js'); // Import user functions
 
 const app = express(); // Create express app
 const server = http.createServer(app); // Create http server
@@ -17,10 +18,14 @@ const botName = '🤖 Chat BOT';
 io.on('connection', socket => {
     // Listen for joinRoom event
     socket.on('joinRoom', ({username, room}) => {
+        // Join user to chat
+        const user = userJoin(socket.id, username, room);
+        // Join user to room
+        socket.join(user.room);
         // Broadcast only to the user that connected (local)
         socket.emit('message', formatMessage(botName, 'Welcome to the Live Chat!'));
-        // Broadcast to all other users except the client connecting when a user connects
-        socket.broadcast.emit('message', formatMessage(botName, 'A user has joined the chat! [Socket ID: ' + socket.id + ']'));
+        // Broadcast to all other users (connected to that room) except the client connecting when a user connects
+        socket.broadcast.to(user.room).emit('message', formatMessage(botName, `➕ ${user.username} has joined the chat!`));
     });
 
     // Listen for chatMessage
